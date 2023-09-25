@@ -64,7 +64,7 @@ git clone https://github.com/yaroslavzinchenko/logic-telecom-test.git
 2. Запустить
 ```
 cd logic-telecom-test
-docker-compose up --build
+docker compose up --build
 ```
 
 3. Запуск тестов
