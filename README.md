@@ -72,6 +72,7 @@ docker compose up --build
 
 4. Запуск тестов
 ```
+cd src
 ./vendor/bin/phpunit tests
 ```
 
@@ -119,3 +120,39 @@ $privs=priv( "DOC_TREE_1,DOC_TREE_2,DOC_TREE_3,DOC_SEE_ALL" );
 параметров, так и названия столбцов в БД, так как и базой, и апи могут
 пользоваться другие люди, у которых могут быть настроены интеграции с нашей
 системой.
+
+
+## Примеры отправки запросов (отправка форм датой)
+1. ```http://localhost/documents/check-attach``` (проверяет, прикреплён ли файл)
+
+```
+token:d363103e44ea7d2b108b11c6ea5ce31e
+document_id:1
+actor_id:1
+```
+
+![img.png](img.png)
+
+
+
+```
+token:d363103e44ea7d2b108b11c6ea5ce31e
+document_id:1
+actor_id:3
+```
+![img_1.png](img_1.png)
+
+2. ```http://localhost/documents/change-status``` (обновляет статус)
+
+```
+token:d363103e44ea7d2b108b11c6ea5ce31e
+document_id:1
+actor_id:1
+status_id:2
+```
+
+![img_2.png](img_2.png)
+
+3. ```http://localhost/documents/upload-doc``` (загружает данные)
+
+![img_3.png](img_3.png)
