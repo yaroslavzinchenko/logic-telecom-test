@@ -9,6 +9,7 @@
  */
 namespace PHPUnit\Event;
 
+use PHPUnit\Event\Code\ClassMethod;
 use PHPUnit\Event\Code\ComparisonFailure;
 use PHPUnit\Event\Code\Throwable;
 use PHPUnit\Event\TestSuite\TestSuite;
@@ -36,6 +37,10 @@ interface Emitter
      */
     public function testRunnerBootstrappedExtension(string $className, array $parameters): void;
 
+    public function dataProviderMethodCalled(ClassMethod $testMethod, ClassMethod $dataProviderMethod): void;
+
+    public function dataProviderMethodFinished(ClassMethod $testMethod, ClassMethod ...$calledMethods): void;
+
     public function testSuiteLoaded(TestSuite $testSuite): void;
 
     public function testSuiteFiltered(TestSuite $testSuite): void;
@@ -45,6 +50,12 @@ interface Emitter
     public function testRunnerEventFacadeSealed(): void;
 
     public function testRunnerExecutionStarted(TestSuite $testSuite): void;
+
+    public function testRunnerDisabledGarbageCollection(): void;
+
+    public function testRunnerTriggeredGarbageCollection(): void;
+
+    public function testSuiteSkipped(TestSuite $testSuite, string $message): void;
 
     public function testSuiteStarted(TestSuite $testSuite): void;
 
@@ -156,23 +167,28 @@ interface Emitter
 
     public function testTriggeredPhpunitDeprecation(Code\Test $test, string $message): void;
 
-    public function testTriggeredPhpDeprecation(Code\Test $test, string $message, string $file, int $line): void;
+    public function testTriggeredPhpDeprecation(Code\Test $test, string $message, string $file, int $line, bool $suppressed): void;
 
-    public function testTriggeredDeprecation(Code\Test $test, string $message, string $file, int $line): void;
+    public function testTriggeredDeprecation(Code\Test $test, string $message, string $file, int $line, bool $suppressed): void;
 
-    public function testTriggeredError(Code\Test $test, string $message, string $file, int $line): void;
+    public function testTriggeredError(Code\Test $test, string $message, string $file, int $line, bool $suppressed): void;
 
-    public function testTriggeredNotice(Code\Test $test, string $message, string $file, int $line): void;
+    public function testTriggeredNotice(Code\Test $test, string $message, string $file, int $line, bool $suppressed): void;
 
-    public function testTriggeredPhpNotice(Code\Test $test, string $message, string $file, int $line): void;
+    public function testTriggeredPhpNotice(Code\Test $test, string $message, string $file, int $line, bool $suppressed): void;
 
-    public function testTriggeredWarning(Code\Test $test, string $message, string $file, int $line): void;
+    public function testTriggeredWarning(Code\Test $test, string $message, string $file, int $line, bool $suppressed): void;
 
-    public function testTriggeredPhpWarning(Code\Test $test, string $message, string $file, int $line): void;
+    public function testTriggeredPhpWarning(Code\Test $test, string $message, string $file, int $line, bool $suppressed): void;
 
     public function testTriggeredPhpunitError(Code\Test $test, string $message): void;
 
     public function testTriggeredPhpunitWarning(Code\Test $test, string $message): void;
+
+    /**
+     * @psalm-param non-empty-string $output
+     */
+    public function testPrintedUnexpectedOutput(string $output): void;
 
     public function testFinished(Code\Test $test, int $numberOfAssertionsPerformed): void;
 
@@ -211,6 +227,10 @@ interface Emitter
     public function testRunnerTriggeredDeprecation(string $message): void;
 
     public function testRunnerTriggeredWarning(string $message): void;
+
+    public function testRunnerEnabledGarbageCollection(): void;
+
+    public function testRunnerExecutionAborted(): void;
 
     public function testRunnerExecutionFinished(): void;
 

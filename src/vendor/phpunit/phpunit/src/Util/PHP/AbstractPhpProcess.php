@@ -15,6 +15,8 @@ use function array_keys;
 use function array_merge;
 use function assert;
 use function escapeshellarg;
+use function file_exists;
+use function file_get_contents;
 use function ini_get_all;
 use function restore_error_handler;
 use function set_error_handler;
@@ -22,10 +24,11 @@ use function str_replace;
 use function str_starts_with;
 use function substr;
 use function trim;
+use function unlink;
 use function unserialize;
 use ErrorException;
-use PHPUnit\Event\Code\TestMethod;
-use PHPUnit\Event\Code\Throwable;
+use PHPUnit\Event\Code\TestMethodBuilder;
+use PHPUnit\Event\Code\ThrowableBuilder;
 use PHPUnit\Event\Facade;
 use PHPUnit\Event\NoPreviousThrowableException;
 use PHPUnit\Event\TestData\MoreThanOneDataSetFromDataProviderException;
@@ -159,14 +162,22 @@ abstract class AbstractPhpProcess
      * @throws MoreThanOneDataSetFromDataProviderException
      * @throws NoPreviousThrowableException
      */
-    public function runTestJob(string $job, Test $test): void
+    public function runTestJob(string $job, Test $test, string $processResultFile): void
     {
         $_result = $this->runJob($job);
 
+        $processResult = '';
+
+        if (file_exists($processResultFile)) {
+            $processResult = file_get_contents($processResultFile);
+
+            @unlink($processResultFile);
+        }
+
         $this->processChildResult(
             $test,
-            $_result['stdout'],
-            $_result['stderr']
+            $processResult,
+            $_result['stderr'],
         );
     }
 
@@ -181,15 +192,15 @@ abstract class AbstractPhpProcess
             $settings = array_merge(
                 $settings,
                 $this->runtime->getCurrentSettings(
-                    array_keys(ini_get_all('pcov'))
-                )
+                    array_keys(ini_get_all('pcov')),
+                ),
             );
         } elseif ($this->runtime->hasXdebug()) {
             $settings = array_merge(
                 $settings,
                 $this->runtime->getCurrentSettings(
-                    array_keys(ini_get_all('xdebug'))
-                )
+                    array_keys(ini_get_all('xdebug')),
+                ),
             );
         }
 
@@ -251,8 +262,8 @@ abstract class AbstractPhpProcess
             assert($test instanceof TestCase);
 
             Facade::emitter()->testErrored(
-                TestMethod::fromTestCase($test),
-                Throwable::from($exception)
+                TestMethodBuilder::fromTestCase($test),
+                ThrowableBuilder::from($exception),
             );
 
             return;
@@ -265,7 +276,7 @@ abstract class AbstractPhpProcess
             static function (int $errno, string $errstr, string $errfile, int $errline): never
             {
                 throw new ErrorException($errstr, $errno, $errno, $errfile, $errline);
-            }
+            },
         );
 
         try {
@@ -282,13 +293,13 @@ abstract class AbstractPhpProcess
                 assert($test instanceof TestCase);
 
                 Facade::emitter()->testErrored(
-                    TestMethod::fromTestCase($test),
-                    Throwable::from($exception)
+                    TestMethodBuilder::fromTestCase($test),
+                    ThrowableBuilder::from($exception),
                 );
 
                 Facade::emitter()->testFinished(
-                    TestMethod::fromTestCase($test),
-                    0
+                    TestMethodBuilder::fromTestCase($test),
+                    0,
                 );
             }
         } catch (ErrorException $e) {
@@ -300,8 +311,8 @@ abstract class AbstractPhpProcess
             assert($test instanceof TestCase);
 
             Facade::emitter()->testErrored(
-                TestMethod::fromTestCase($test),
-                Throwable::from($exception)
+                TestMethodBuilder::fromTestCase($test),
+                ThrowableBuilder::from($exception),
             );
         }
 
@@ -310,7 +321,7 @@ abstract class AbstractPhpProcess
                 $output = $childResult['output'];
             }
 
-            Facade::forward($childResult['events']);
+            Facade::instance()->forward($childResult['events']);
             PassedTests::instance()->import($childResult['passedTests']);
 
             assert($test instanceof TestCase);
@@ -318,9 +329,9 @@ abstract class AbstractPhpProcess
             $test->setResult($childResult['testResult']);
             $test->addToAssertionCount($childResult['numAssertions']);
 
-            if (CodeCoverage::isActive() && $childResult['codeCoverage'] instanceof \SebastianBergmann\CodeCoverage\CodeCoverage) {
-                CodeCoverage::instance()->merge(
-                    $childResult['codeCoverage']
+            if (CodeCoverage::instance()->isActive() && $childResult['codeCoverage'] instanceof \SebastianBergmann\CodeCoverage\CodeCoverage) {
+                CodeCoverage::instance()->codeCoverage()->merge(
+                    $childResult['codeCoverage'],
                 );
             }
         }

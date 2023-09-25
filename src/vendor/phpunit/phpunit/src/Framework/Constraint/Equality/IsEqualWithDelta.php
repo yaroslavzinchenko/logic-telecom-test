@@ -55,13 +55,13 @@ final class IsEqualWithDelta extends Constraint
         try {
             $comparator = $comparatorFactory->getComparatorFor(
                 $this->value,
-                $other
+                $other,
             );
 
             $comparator->assertEquals(
                 $this->value,
                 $other,
-                $this->delta
+                $this->delta,
             );
         } catch (ComparisonFailure $f) {
             if ($returnResult) {
@@ -70,7 +70,7 @@ final class IsEqualWithDelta extends Constraint
 
             throw new ExpectationFailedException(
                 trim($description . "\n" . $f->getMessage()),
-                $f
+                $f,
             );
         }
 
@@ -83,9 +83,9 @@ final class IsEqualWithDelta extends Constraint
     public function toString(): string
     {
         return sprintf(
-            'is equal to %s with delta <%F>>',
+            'is equal to %s with delta <%F>',
             $this->exporter()->export($this->value),
-            $this->delta
+            $this->delta,
         );
     }
 }

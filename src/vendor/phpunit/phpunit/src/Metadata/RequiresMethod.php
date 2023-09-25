@@ -10,9 +10,9 @@
 namespace PHPUnit\Metadata;
 
 /**
- * @internal This class is not covered by the backward compatibility promise for PHPUnit
- *
  * @psalm-immutable
+ *
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
 final class RequiresMethod extends Metadata
 {
@@ -33,7 +33,7 @@ final class RequiresMethod extends Metadata
         $this->methodName = $methodName;
     }
 
-    public function isrequiresMethod(): bool
+    public function isRequiresMethod(): bool
     {
         return true;
     }

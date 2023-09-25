@@ -66,8 +66,11 @@ git clone https://github.com/yaroslavzinchenko/logic-telecom-test.git
 cd logic-telecom-test
 docker compose up --build
 ```
+3. Зайти на localhost:8000. Сервер mysql, логин root, пароль root.
+Создать базу test. Импортировать файл test.sql
+(лежит в корне проекта).
 
-3. Запуск тестов
+4. Запуск тестов
 ```
 ./vendor/bin/phpunit tests
 ```
